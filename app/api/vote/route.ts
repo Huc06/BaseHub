@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // In a real app, you would use a database to store votes
 // For demo purposes, we'll use in-memory storage
-let votes: Record<string, number> = {
+const votes: Record<string, number> = {
   option1: 15,
   option2: 23,
   option3: 8,
-  option4: 12
+  option4: 12,
 };
 
-let userVotes: Record<string, string> = {}; // FID -> optionId
+const userVotes: Record<string, string> = {}; // FID -> optionId
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     if (!fid || !option) {
       return NextResponse.json(
         { error: 'Missing required fields: fid and option' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (userVotes[fid]) {
       return NextResponse.json(
         { error: 'User has already voted' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     if (!['option1', 'option2', 'option3', 'option4'].includes(option)) {
       return NextResponse.json(
         { error: 'Invalid option' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,14 +48,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       votes,
-      userVote: option
+      userVote: option,
     });
-
   } catch (error) {
     console.error('Error processing vote:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -63,6 +62,6 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     votes,
-    totalVotes: Object.values(votes).reduce((sum, count) => sum + count, 0)
+    totalVotes: Object.values(votes).reduce((sum, count) => sum + count, 0),
   });
 } 

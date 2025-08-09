@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useMiniKit, useAddFrame } from "@coinbase/onchainkit/minikit";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const addFrame = useAddFrame();
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     if (!isFrameReady) setFrameReady();
@@ -24,305 +24,123 @@ export default function App() {
   const games = [
     {
       id: 'caro',
-      title: 'Caro Game',
-      subtitle: 'Trò chơi cổ điển',
-      description: 'Đặt 5 quân liên tiếp theo hàng ngang, dọc hoặc chéo để giành chiến thắng',
-      colors: {
-        primary: '#00E6FF',
-        secondary: '#FFB020'
-      },
+      title: 'Caro',
+      subtitle: 'Five in a row',
+      description: 'Classic 5-in-a-row',
+      image: '/images/Caro.png',
       icon: '🎯',
       href: '/caro'
     },
     {
       id: 'word',
-      title: 'Nối từ',
-      subtitle: 'Thử thách từ vựng',
-      description: 'Nhập từ bắt đầu bằng chữ cái cuối của từ trước đó',
-      colors: {
-        primary: '#9333EA',
-        secondary: '#EC4899'
-      },
+      title: 'Word Chain',
+      subtitle: 'Vocabulary challenge',
+      description: 'Connect words creatively',
+      gradient: 'from-purple-400/40 to-pink-400/40',
+      image: '/images/Word.png',
       icon: '🔤',
       href: '/word-chain'
     }
   ];
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % games.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + games.length) % games.length);
-  };
-
-    return (
-    <div className="min-h-screen overflow-hidden">
-      {/* Caro-style Background */}
+  return (
+    <div className="min-h-screen relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-[#0B1220] to-[#0B0F1A]" />
-      <div 
+      <div
         className="absolute inset-0"
         style={{
-          background: "radial-gradient(40% 40% at 5% 5%, rgba(0,230,255,0.12) 0%, rgba(0,0,0,0) 65%), radial-gradient(35% 35% at 100% 100%, rgba(255,176,32,0.12) 0%, rgba(0,0,0,0) 60%)"
+          background:
+            "radial-gradient(40% 40% at 5% 5%, rgba(0,230,255,0.12) 0%, rgba(0,0,0,0) 65%), radial-gradient(35% 35% at 100% 100%, rgba(255,176,32,0.12) 0%, rgba(0,0,0,0) 60%)",
         }}
       />
-
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between p-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl">🎮</span>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-white">BaseHub Games</h1>
-            <p className="text-white/60 text-sm">
-              {context?.user?.displayName ? `Welcome back, ${context.user.displayName}!` : "Choose your game"}
-            </p>
+      {/* Mobile Gaming Header */}
+      <div className="relative z-10">
+        {/* Status Bar & Header */}
+        <div className="bg-slate-900/70 backdrop-blur-lg border-b border-slate-700/50 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <span className="text-xl font-bold text-white drop-shadow">🎮</span>
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-white">BaseHub</h1>
+                <p className="text-white/70 text-xs">Gaming Platform</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button className="w-8 h-8 bg-slate-800/60 border border-slate-700/60 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              {!context?.client?.added && (
+                <button
+                  onClick={handleAddFrame}
+                  className="px-3 py-1 bg-slate-800/60 border border-slate-700/60 rounded-lg text-xs text-white"
+                >
+                  Save
+                </button>
+              )}
+            </div>
           </div>
         </div>
-        
-        {!context?.client?.added && (
-          <button
-            onClick={handleAddFrame}
-            className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl hover:bg-white/20 transition-all duration-300"
-          >
-            💾 Save Frame
-          </button>
-        )}
-      </header>
 
-             {/* Responsive Game Cards */}
-       <div className="relative flex-1 flex items-center justify-center px-4 py-8">
-         {/* Mobile: Stack Layout */}
-         <div className="md:hidden w-full max-w-sm">
-           {games.map((game, index) => (
-             <div 
-               key={game.id}
-               className={`transition-all duration-700 ease-out ${
-                 index === currentSlide ? 'block' : 'hidden'
-               }`}
-             >
-               <div 
-                 className="w-full h-[450px] rounded-3xl backdrop-blur-md overflow-hidden shadow-2xl"
-                 style={{
-                   background: `linear-gradient(135deg, ${game.colors.primary}20, ${game.colors.secondary}20)`,
-                   border: `2px solid ${game.colors.primary}`,
-                   boxShadow: `0 0 50px ${game.colors.primary}30`
-                 }}
-               >
-                 {/* Animated Background */}
-                 <div className="absolute inset-0 opacity-30">
-                   <div 
-                     className="absolute inset-0"
-                     style={{
-                       background: `radial-gradient(circle at 20% 20%, ${game.colors.primary}40 0%, transparent 70%)`
-                     }}
-                   />
-                   <div 
-                     className="absolute inset-0"
-                     style={{
-                       background: `radial-gradient(circle at 80% 80%, ${game.colors.secondary}40 0%, transparent 70%)`
-                     }}
-                   />
-                 </div>
-                 
-                 {/* Card Content */}
-                 <div className="relative h-full p-6 flex flex-col justify-between">
-                   {/* Icon Section */}
-                   <div className="flex justify-center">
-                     <div 
-                       className="w-20 h-20 rounded-full flex items-center justify-center mb-6 animate-float"
-                       style={{
-                         background: `linear-gradient(135deg, ${game.colors.primary}30, ${game.colors.secondary}30)`,
-                         border: `2px solid ${game.colors.primary}60`,
-                         boxShadow: `0 0 30px ${game.colors.primary}40`
-                       }}
-                     >
-                       <span className="text-4xl filter drop-shadow-lg">{game.icon}</span>
-                     </div>
-                   </div>
+        {/* Games Grid (2 items) */}
+        <div className="p-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
+            {games.map((game) => (
+              <Link key={game.id} href={game.href}>
+                <div
+                  className={`${game.image ? 'relative aspect-square rounded-3xl overflow-hidden shadow-xl active:scale-95 transition-transform' : 'relative aspect-square rounded-3xl p-4 bg-slate-800/60 border border-slate-700/60 backdrop-blur-md shadow-xl active:scale-95 transition-transform overflow-hidden'}`}
+                >
+                  {game.image ? (
+                    <>
+                      <Image src={game.image} alt={game.title} fill className="object-cover" priority />
+                      <div className="absolute inset-0 bg-black/10" />
+                      <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                        <div className="px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm text-white text-xs font-semibold">
+                          {game.title}
+                        </div>
+                        <div className="px-2 py-1 rounded-lg bg-white/20 text-white text-[11px] font-medium">
+                          Play
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 opacity-30">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-400/20 rounded-full blur-2xl" />
+                        <div className="absolute bottom-0 left-0 w-20 h-20 bg-amber-400/20 rounded-full blur-xl" />
+                      </div>
+                      <div className="relative z-10 h-full flex flex-col justify-between">
+                        <span className="text-3xl drop-shadow">{game.icon}</span>
+                        <div>
+                          <h3 className="text-white font-bold text-lg">{game.title}</h3>
+                          <p className="text-white/70 text-xs">{game.subtitle}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
 
-                   {/* Content */}
-                   <div className="text-center flex-1">
-                     <h3 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">{game.title}</h3>
-                     <p className="text-white/90 text-lg mb-4 font-medium">{game.subtitle}</p>
-                     <p className="text-white/70 text-sm leading-relaxed">{game.description}</p>
-                   </div>
-
-                   {/* Action Button */}
-                   <div className="mt-6">
-                     <Link href={game.href}>
-                       <button 
-                         className="w-full py-4 rounded-2xl text-white font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                         style={{
-                           background: `linear-gradient(135deg, ${game.colors.primary}, ${game.colors.secondary})`,
-                           boxShadow: `0 10px 30px ${game.colors.primary}40`
-                         }}
-                       >
-                         <span className="flex items-center justify-center gap-3 text-lg">
-                           Play Now
-                           <span className="transform transition-transform">→</span>
-                         </span>
-                       </button>
-                     </Link>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           ))}
-         </div>
-
-         {/* Desktop: 3D Carousel */}
-         <div className="hidden md:block relative w-full h-[500px] perspective-1000">
-           <div className="relative w-full h-full flex items-center justify-center transform-gpu">
-             {games.map((game, index) => {
-               const offset = index - currentSlide;
-               const isActive = offset === 0;
-               
-               return (
-                 <div
-                   key={game.id}
-                   className="absolute transition-all duration-1000 ease-out transform-gpu backface-hidden"
-                   style={{
-                     transform: `
-                       translateX(${offset * 350}px)
-                       translateY(${offset * -100}px)
-                       translateZ(${isActive ? 50 : -300}px)
-                       rotateX(${offset * 12}deg)
-                       rotateY(${offset * -25}deg)
-                       rotateZ(${offset * 8}deg)
-                       scale(${isActive ? 1 : 0.75})
-                     `,
-                     zIndex: isActive ? 20 : 5,
-                     opacity: Math.abs(offset) > 1 ? 0 : 1,
-                     filter: `blur(${Math.abs(offset) * 2}px) brightness(${isActive ? 1 : 0.7})`,
-                   }}
-                 >
-                   <div 
-                     className="w-80 h-[450px] rounded-3xl backdrop-blur-md overflow-hidden group cursor-pointer transform-gpu shadow-2xl"
-                     style={{
-                       background: `linear-gradient(135deg, ${game.colors.primary}20, ${game.colors.secondary}20)`,
-                       border: `2px solid ${isActive ? game.colors.primary : 'rgba(255,255,255,0.1)'}`,
-                       boxShadow: isActive ? `0 0 50px ${game.colors.primary}30` : '0 10px 30px rgba(0,0,0,0.3)'
-                     }}
-                     onClick={() => setCurrentSlide(index)}
-                   >
-                     {/* Animated Background */}
-                     <div className="absolute inset-0 opacity-30">
-                       <div 
-                         className="absolute inset-0"
-                         style={{
-                           background: `radial-gradient(circle at 20% 20%, ${game.colors.primary}40 0%, transparent 70%)`
-                         }}
-                       />
-                       <div 
-                         className="absolute inset-0"
-                         style={{
-                           background: `radial-gradient(circle at 80% 80%, ${game.colors.secondary}40 0%, transparent 70%)`
-                         }}
-                       />
-                     </div>
-                     
-                     {/* Card Content */}
-                     <div className="relative h-full p-6 flex flex-col justify-between">
-                       {/* Icon Section */}
-                       <div className="flex justify-center">
-                         <div 
-                           className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${
-                             isActive ? 'animate-float' : ''
-                           }`}
-                           style={{
-                             background: `linear-gradient(135deg, ${game.colors.primary}30, ${game.colors.secondary}30)`,
-                             border: `2px solid ${game.colors.primary}60`,
-                             boxShadow: `0 0 30px ${game.colors.primary}40`
-                           }}
-                         >
-                           <span className="text-4xl filter drop-shadow-lg">{game.icon}</span>
-                         </div>
-                       </div>
-
-                       {/* Content */}
-                       <div className="text-center flex-1">
-                         <h3 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">{game.title}</h3>
-                         <p className="text-white/90 text-lg mb-4 font-medium">{game.subtitle}</p>
-                         <p className="text-white/70 text-sm leading-relaxed">{game.description}</p>
-                       </div>
-
-                       {/* Action Button */}
-                       <div className="mt-6">
-                         {isActive ? (
-                           <Link href={game.href}>
-                             <button 
-                               className="w-full py-3 rounded-2xl text-white font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                               style={{
-                                 background: `linear-gradient(135deg, ${game.colors.primary}, ${game.colors.secondary})`,
-                                 boxShadow: `0 10px 30px ${game.colors.primary}40`
-                               }}
-                             >
-                               <span className="flex items-center justify-center gap-2">
-                                 Play Now
-                                 <span className="transform transition-transform group-hover:translate-x-1">→</span>
-                               </span>
-                             </button>
-                           </Link>
-                         ) : (
-                           <div className="w-full py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white/50 font-semibold text-center">
-                             Play Now
-                           </div>
-                         )}
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               );
-             })}
-           </div>
-         </div>
-
-         {/* Navigation Arrows */}
-         <button
-           onClick={prevSlide}
-           className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-lg md:text-xl hover:bg-white/20 transition-all duration-300 z-30"
-         >
-           ←
-         </button>
-         <button
-           onClick={nextSlide}
-           className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-lg md:text-xl hover:bg-white/20 transition-all duration-300 z-30"
-         >
-           →
-         </button>
-       </div>
-
-      {/* Slide Indicators */}
-      <div className="relative z-10 flex justify-center gap-4 mt-8">
-        {games.map((game, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentSlide(index)}
-            className={`w-4 h-4 rounded-full transition-all duration-300 ${
-              index === currentSlide 
-                ? 'scale-125' 
-                : 'hover:scale-110'
-            }`}
-            style={{
-              background: index === currentSlide ? game.colors.primary : 'rgba(255,255,255,0.3)',
-              boxShadow: index === currentSlide ? `0 0 15px ${game.colors.primary}60` : 'none'
-            }}
-          />
-        ))}
       </div>
-
-      {/* Footer */}
-      <footer className="relative z-10 mt-12 pb-8 text-center">
-        <div className="flex items-center justify-center gap-6 text-white/60 text-sm">
-          <span>Built for Farcaster</span>
-          <span>•</span>
-          <span>Base Sepolia</span>
-          <span>•</span>
-          <span>Powered by OnchainKit</span>
-        </div>
-      </footer>
     </div>
+  );
+}
+
+// Navigation Item Component
+function NavItem({ icon, label, active = false }: { icon: string; label: string; active?: boolean }) {
+  return (
+    <button className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
+      active ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
+    }`}>
+      <span className="text-lg mb-1">{icon}</span>
+      <span className="text-xs font-medium">{label}</span>
+    </button>
   );
 }

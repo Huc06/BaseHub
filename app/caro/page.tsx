@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import Link from "next/link";
+import Image from "next/image";
 
 type Player = "X" | "O";
 type Cell = Player | null;
@@ -99,16 +100,20 @@ export default function CaroPage() {
   }
 
   return (
-    <div className="caro-game-background min-h-screen">
+    <div className="min-h-screen relative">
       <div className="relative w-full h-full p-4">
-        {/* Background neon corners */}
-        <div
-          className="absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(40% 40% at 5% 5%, rgba(0,230,255,0.12) 0%, rgba(0,0,0,0) 65%), radial-gradient(35% 35% at 100% 100%, rgba(255,176,32,0.12) 0%, rgba(0,0,0,0) 60%), linear-gradient(180deg, #0B1220 0%, #0B0F1A 100%)",
-          }}
-        />
+        {/* Background image */}
+        <div className="fixed inset-0 -z-10">
+          <Image
+            src="/images/bg-caro.png"
+            alt="Caro game background"
+            fill
+            className="object-cover"
+            priority
+          />
+          {/* Optional overlay for better readability */}
+          <div className="absolute inset-0 bg-black/20" />
+        </div>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -126,116 +131,365 @@ export default function CaroPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-4">
-          {/* Left: Players */}
-          <div className="col-span-12 md:col-span-3 space-y-4">
-            <PlayerCard label="Bạn" piece="X" active={current === "X" && !winner} />
-            <PlayerCard label="Đối thủ" piece="O" active={current === "O" && !winner} />
-          </div>
+                 {/* Mobile Layout */}
+         <div className="block lg:hidden">
+           {/* Mobile Players Row */}
+           <div className="grid grid-cols-2 gap-3 mb-6">
+              <PlayerCard label="You" piece="X" active={current === "X" && !winner} mobile />
+              <PlayerCard label="Opponent" piece="O" active={current === "O" && !winner} mobile />
+           </div>
 
-          {/* Center: Board */}
-          <div className="col-span-12 md:col-span-6">
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-4 relative">
-              {/* Header */}
-              <div className="text-center mb-4">
-                <div className="text-white/60 text-sm mb-1">ELO 1320</div>
-                {winner ? (
-                  <div className="inline-flex items-center gap-2 px-6 py-2 rounded-xl font-bold text-slate-950"
-                       style={{
-                         background: "linear-gradient(90deg, #00E6FF 0%, #FFB020 100%)",
-                         boxShadow: "0 0 24px rgba(0,230,255,.3)",
-                       }}>
-                    Victory
+           {/* Mobile Game Board */}
+           <div className="mb-6">
+             <div className="bg-slate-900/80 backdrop-blur-sm rounded-2xl border border-cyan-500/20 p-3 shadow-2xl">
+               {/* Mobile Header */}
+               <div className="text-center mb-3">
+                 <div className="text-white/60 text-xs mb-1">ELO 1320</div>
+                 {winner ? (
+                   <div 
+                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-white text-sm"
+                     style={{
+                       background: "linear-gradient(90deg, #00E6FF 0%, #FFB020 100%)",
+                       boxShadow: "0 0 16px rgba(0,230,255,.3)",
+                     }}
+                   >
+                      🎉 Victory!
+                   </div>
+                 ) : isDraw ? (
+                    <div className="text-white/80 font-medium text-sm">Draw</div>
+                 ) : (
+                   <div className="text-white/80 font-medium text-sm">
+                      Turn: {current === "X" ? "You" : "Opponent"}
+                   </div>
+                 )}
+               </div>
+
+               {/* Mobile Board */}
+               <div className="flex justify-center mb-4">
+                 <div className="relative">
+                   <div className="bg-slate-800/60 rounded-xl p-1 border border-slate-700/50">
+                     <div
+                       className="grid rounded-lg overflow-hidden"
+                       style={{ 
+                         gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+                         gap: '1px',
+                         width: '300px',
+                         height: '300px'
+                       }}
+                     >
+                       {board.map((row, r) =>
+                         row.map((cell, c) => {
+                           const isWinCell = winningLine?.some((p) => p.r === r && p.c === c);
+                           return (
+                             <button
+                               key={`${r}-${c}`}
+                               onClick={() => handleClick(r, c)}
+                               className={`
+                                 relative flex items-center justify-center
+                                 bg-slate-700/40 active:bg-slate-600/70
+                                 border-0 transition-all duration-150
+                                 ${!cell && !winner ? "active:scale-95" : ""}
+                                 ${winner && !cell ? "cursor-not-allowed opacity-50" : ""}
+                                 ${isWinCell ? "bg-gradient-to-br from-cyan-400/40 to-amber-400/40" : ""}
+                               `}
+                               disabled={!!(winner || cell)}
+                               style={{
+                                 width: '20px',
+                                 height: '20px'
+                               }}
+                             >
+                               {cell === "X" && <GamePiece player="X" size={14} />}
+                               {cell === "O" && <GamePiece player="O" size={14} />}
+                               
+                               {!cell && !winner && (
+                                 <div className="absolute inset-0 opacity-0 active:opacity-30 bg-white/20 transition-opacity duration-100" />
+                               )}
+                             </button>
+                           );
+                         })
+                       )}
+                     </div>
+                   </div>
+
+                   {/* Mobile Victory Overlay */}
+                   {winner && (
+                     <div className="absolute inset-0 bg-black/70 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                       <div className="text-center px-4">
+                         <div className="text-3xl mb-2">🎉</div>
+                         <div 
+                           className="px-4 py-2 rounded-lg text-white text-sm font-bold"
+                           style={{
+                             background: "linear-gradient(135deg, #00E6FF 0%, #FFB020 100%)",
+                           }}
+                         >
+                            {winner === "X" ? "You win!" : "Opponent wins!"}
+                         </div>
+                       </div>
+                     </div>
+                   )}
+                 </div>
+               </div>
+
+               {/* Mobile Actions */}
+               <div className="flex gap-2">
+                 <button
+                   onClick={reset}
+                   className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg font-medium text-white text-sm transition-all duration-200"
+                   style={{
+                     background: "linear-gradient(135deg, #00E6FF 0%, #0099CC 100%)",
+                   }}
+                 >
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                   </svg>
+                    Play Again
+                 </button>
+                 <button className="flex-1 flex items-center justify-center gap-1 py-2 px-3 rounded-lg font-medium text-white/90 bg-slate-800/60 border border-slate-600/50 text-sm transition-all duration-200">
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                   </svg>
+                    Resign
+                 </button>
+               </div>
+             </div>
+           </div>
+
+           {/* Mobile Move History */}
+           <div>
+             <div className="bg-slate-900/80 backdrop-blur-lg rounded-2xl border border-cyan-500/20 p-4 shadow-2xl">
+               <h3 className="text-white font-bold mb-3 flex items-center gap-2 text-sm">
+                 <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                 </svg>
+                  Move History
+               </h3>
+               <div className="space-y-2 max-h-40 overflow-y-auto">
+                 {moveHistory.length === 0 ? (
+                   <div className="text-center py-6">
+                     <div className="text-2xl mb-2 opacity-50">📝</div>
+                     <div className="text-white/60 text-xs">Chưa có nước đi nào</div>
+                   </div>
+                 ) : (
+                   moveHistory.map((m, i) => (
+                     <div 
+                       key={i} 
+                       className="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 text-xs"
+                     >
+                       <div className="flex items-center gap-2">
+                         <span className="text-cyan-400 font-mono font-bold w-6">
+                           {i + 1}
+                         </span>
+                         <GamePiece player={m.player} size={12} />
+                         <span className="text-white font-medium">{m.move}</span>
+                       </div>
+                       <span 
+                         className="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                         style={{
+                           background: m.player === 'X' ? 'rgba(0,230,255,0.2)' : 'rgba(255,176,32,0.2)',
+                           color: m.player === 'X' ? '#00E6FF' : '#FFB020'
+                         }}
+                       >
+                         {m.player}
+                       </span>
+                     </div>
+                   ))
+                 )}
+               </div>
+             </div>
+           </div>
+         </div>
+
+         {/* Desktop Layout */}
+         <div className="hidden lg:grid grid-cols-12 gap-4">
+           {/* Left: Players */}
+           <div className="col-span-12 md:col-span-3 space-y-4">
+              <PlayerCard label="You" piece="X" active={current === "X" && !winner} />
+              <PlayerCard label="Opponent" piece="O" active={current === "O" && !winner} />
+           </div>
+
+           {/* Center: Board */}
+           <div className="col-span-12 md:col-span-6">
+             <div className="bg-slate-900/80 backdrop-blur-sm rounded-3xl border border-cyan-500/20 p-6 shadow-2xl">
+               {/* Header */}
+               <div className="text-center mb-6">
+                 <div className="text-white/60 text-sm mb-1">ELO 1320</div>
+                 {winner ? (
+                   <div 
+                     className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl font-bold text-white"
+                     style={{
+                       background: "linear-gradient(135deg, #00E6FF 0%, #FFB020 100%)",
+                       boxShadow: "0 0 40px rgba(0,230,255,0.4)"
+                     }}
+                   >
+                      <span>🎉 Victory!</span>
+                   </div>
+                 ) : isDraw ? (
+                   <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white bg-white/20">
+                      <span>Draw</span>
+                   </div>
+                 ) : (
+                   <div className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-white/10">
+                     <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                      <span>Turn: {current === "X" ? "You" : "Opponent"}</span>
+                   </div>
+                 )}
+               </div>
+
+               {/* Desktop Board */}
+               <div className="flex justify-center">
+                 <div className="relative">
+                   <div className="bg-slate-800/60 rounded-2xl p-4 border border-slate-700/50">
+                     <div
+                       className="grid rounded-xl overflow-hidden"
+                       style={{ 
+                         gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+                         gap: '1px',
+                         width: '480px',
+                         height: '480px'
+                       }}
+                     >
+                       {board.map((row, r) =>
+                         row.map((cell, c) => {
+                           const isWinCell = winningLine?.some((p) => p.r === r && p.c === c);
+                           return (
+                             <button
+                               key={`${r}-${c}`}
+                               onClick={() => handleClick(r, c)}
+                               className={`
+                                 relative flex items-center justify-center
+                                 bg-slate-700/40 hover:bg-slate-600/60
+                                 border border-slate-600/30
+                                 transition-all duration-200
+                                 ${!cell && !winner ? "hover:scale-[1.02] hover:shadow-lg hover:border-cyan-400/40" : ""}
+                                 ${winner && !cell ? "cursor-not-allowed opacity-50" : ""}
+                                 ${isWinCell ? "bg-gradient-to-br from-cyan-400/30 to-amber-400/30 ring-2 ring-amber-400/60 shadow-lg" : ""}
+                               `}
+                               disabled={!!(winner || cell)}
+                               style={{
+                                 minWidth: '30px',
+                                 minHeight: '30px',
+                                 maxWidth: '32px',
+                                 maxHeight: '32px'
+                               }}
+                             >
+                               {cell === "X" && (
+                                 <div className="flex items-center justify-center w-full h-full">
+                                   <GamePiece player="X" size={22} />
+                                 </div>
+                               )}
+                               {cell === "O" && (
+                                 <div className="flex items-center justify-center w-full h-full">
+                                   <GamePiece player="O" size={22} />
+                                 </div>
+                               )}
+                               
+                               {!cell && !winner && (
+                                 <div className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-gradient-to-br from-cyan-400/20 to-amber-400/20 rounded transition-opacity duration-200" />
+                               )}
+
+                               {!cell && !winner && (
+                                 <div className="absolute inset-0 opacity-0 active:opacity-50 bg-white/20 rounded transition-opacity duration-75" />
+                               )}
+                             </button>
+                           );
+                         })
+                       )}
+                     </div>
+                   </div>
+
+                   {/* Desktop Victory Overlay */}
+                   {winner && (
+                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                       <div className="text-center">
+                         <div className="text-6xl mb-4">🎉</div>
+                         <div 
+                           className="px-8 py-4 rounded-2xl text-white text-xl font-bold shadow-2xl"
+                           style={{
+                             background: "linear-gradient(135deg, #00E6FF 0%, #FFB020 100%)",
+                             boxShadow: "0 0 40px rgba(0,230,255,0.4)"
+                           }}
+                         >
+                            {winner === "X" ? "🎯 You win!" : "🎯 Opponent wins!"}
+                         </div>
+                         <div className="text-white/80 text-sm mt-3">
+                            Congratulations!
+                         </div>
+                       </div>
+                     </div>
+                   )}
+                 </div>
+               </div>
+
+               {/* Desktop Actions */}
+               <div className="flex justify-center gap-4 mt-8">
+                 <button
+                   onClick={reset}
+                   className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                   style={{
+                     background: "linear-gradient(135deg, #00E6FF 0%, #0099CC 100%)",
+                     boxShadow: "0 4px 20px rgba(0,230,255,0.3)"
+                   }}
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                   </svg>
+                    Play Again
+                 </button>
+                 <button 
+                   className="flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white/90 bg-slate-800/60 hover:bg-slate-700/80 border border-slate-600/50 hover:border-slate-500/70 transition-all duration-200 transform hover:scale-105 shadow-lg backdrop-blur-sm"
+                 >
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                   </svg>
+                    Resign
+                 </button>
+               </div>
+             </div>
+           </div>
+
+           {/* Right: Move history */}
+           <div className="col-span-12 md:col-span-3">
+             <div className="bg-slate-900/80 backdrop-blur-lg rounded-2xl border border-cyan-500/20 p-6 shadow-2xl">
+               <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Move History
+              </h3>
+              <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                {moveHistory.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-4xl mb-3 opacity-50">📝</div>
+                    <div className="text-white/60 text-sm">No moves yet</div>
+                    <div className="text-white/40 text-xs mt-1">Start playing to see history</div>
                   </div>
-                ) : isDraw ? (
-                  <div className="text-white/80 font-medium">Hòa</div>
                 ) : (
-                  <div className="text-white/80 font-medium">Đang chơi…</div>
-                )}
-              </div>
-
-              {/* Board */}
-              <div className="relative mx-auto w-fit">
-                <div
-                  className="p-1 rounded-xl"
-                  style={{
-                    background:
-                      "repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 24px), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 1px, transparent 1px 24px)",
-                  }}
-                >
-                  <div
-                    className="grid rounded-lg bg-black/40"
-                    style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 24px)` }}
-                  >
-                    {board.map((row, r) =>
-                      row.map((cell, c) => {
-                        const isWinCell = winningLine?.some((p) => p.r === r && p.c === c);
-                        return (
-                          <button
-                            key={`${r}-${c}`}
-                            onClick={() => handleClick(r, c)}
-                            className={`w-6 h-6 flex items-center justify-center select-none transition-all duration-150 ${
-                              !cell ? "hover:scale-110" : ""
-                            } ${winner && !cell ? "cursor-not-allowed opacity-60" : ""} ${
-                              isWinCell ? "ring-1 ring-amber-400/80" : ""
-                            }`}
-                            disabled={!!(winner || cell)}
-                          >
-                            {cell === "X" && <GamePiece player="X" size={18} />}
-                            {cell === "O" && <GamePiece player="O" size={18} />}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-
-                {/* Victory overlay */}
-                {winner && (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div
-                      className="px-4 py-1.5 rounded-lg text-white text-sm border border-white/10 bg-black/40"
-                      style={{ boxShadow: "0 0 24px rgba(255,176,32,.25)" }}
+                  moveHistory.map((m, i) => (
+                    <div 
+                      key={i} 
+                      className="flex items-center justify-between p-3 rounded-lg bg-slate-800/40 hover:bg-slate-700/50 transition-colors border border-slate-700/30"
                     >
-                      {winner === "X" ? "X thắng!" : "O thắng!"}
+                      <div className="flex items-center gap-3">
+                        <span className="text-cyan-400 text-sm font-mono font-bold w-8 text-center">
+                          {i + 1}
+                        </span>
+                        <div className="w-6 h-6 flex items-center justify-center">
+                          <GamePiece player={m.player} size={16} />
+                        </div>
+                        <span className="text-white font-medium">{m.move}</span>
+                      </div>
+                      <span 
+                        className="text-xs font-semibold px-2 py-1 rounded-full"
+                        style={{
+                          background: m.player === 'X' ? 'rgba(0,230,255,0.2)' : 'rgba(255,176,32,0.2)',
+                          color: m.player === 'X' ? '#00E6FF' : '#FFB020'
+                        }}
+                      >
+                        {m.player}
+                      </span>
                     </div>
-                  </div>
+                  ))
                 )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex justify-center gap-3 mt-6">
-                <button
-                  onClick={reset}
-                  className="px-4 py-2 rounded-lg font-medium bg-white text-slate-900 hover:bg-white/90 transition"
-                >
-                  Chơi mới
-                </button>
-                <button className="px-4 py-2 rounded-lg font-medium text-white/90 bg-white/10 hover:bg-white/15 border border-white/10 transition">
-                  Đầu hàng
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Move history */}
-          <div className="col-span-12 md:col-span-3">
-            <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-4 h-full">
-              <h3 className="text-white font-semibold mb-3">Lịch sử nước đi</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-                {moveHistory.length === 0 && (
-                  <div className="text-white/60 text-sm text-center py-8">Chưa có nước đi nào</div>
-                )}
-                {moveHistory.map((m, i) => (
-                  <div key={i} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white/50 w-6">{i + 1}.</span>
-                      <GamePiece player={m.player} size={12} />
-                      <span className="text-white/80">{m.move}</span>
-                    </div>
-                    <span className="text-white/40">{m.player}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
@@ -246,24 +500,117 @@ export default function CaroPage() {
 }
 
 // UI Components
-function PlayerCard({ label, piece, active }: { label: string; piece: Player; active?: boolean }) {
-  return (
-    <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-12 h-12 bg-white/10 rounded-full grid place-items-center">
-          <span className="text-2xl">👤</span>
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-white font-semibold truncate">{label}</h3>
-          <div className="flex items-center gap-2">
+function PlayerCard({ label, piece, active, mobile }: { label: string; piece: Player; active?: boolean; mobile?: boolean }) {
+  const isX = piece === "X";
+  const playerColor = isX ? "#00E6FF" : "#FFB020";
+  
+  if (mobile) {
+    return (
+      <div 
+        className={`bg-slate-900/80 backdrop-blur-lg rounded-xl border p-3 shadow-xl transition-all duration-300 ${
+          active 
+            ? 'border-cyan-400/50 ring-1 ring-cyan-400/20 bg-slate-900/90' 
+            : 'border-slate-700/40'
+        }`}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <div 
+            className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
+            style={{
+              background: active 
+                ? `linear-gradient(135deg, ${playerColor}20, ${playerColor}40)`
+                : 'rgba(71, 85, 105, 0.4)',
+              border: `2px solid ${active ? playerColor : 'rgba(148, 163, 184, 0.3)'}`
+            }}
+          >
             <GamePiece player={piece} size={16} />
-            <span className="text-white/60 text-xs">{active ? "Đến lượt" : ""}</span>
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-white font-semibold text-sm truncate">{label}</h3>
+            <span 
+              className="text-xs font-medium px-1.5 py-0.5 rounded-full"
+              style={{
+                background: `${playerColor}20`,
+                color: playerColor
+              }}
+            >
+              {piece}
+            </span>
+          </div>
+        </div>
+        
+        {active && (
+          <div className="flex items-center gap-1 justify-center">
+            <div 
+              className="w-1.5 h-1.5 rounded-full animate-pulse"
+              style={{ backgroundColor: playerColor }}
+            />
+            <span className="text-xs font-medium" style={{ color: playerColor }}>
+              Your turn
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+  
+  return (
+    <div 
+      className={`bg-slate-900/80 backdrop-blur-lg rounded-2xl border p-5 shadow-2xl transition-all duration-300 ${
+        active 
+          ? 'border-cyan-400/50 ring-2 ring-cyan-400/20 bg-slate-900/90' 
+          : 'border-slate-700/40'
+      }`}
+    >
+      <div className="flex items-center gap-4 mb-4">
+        <div 
+          className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg"
+          style={{
+            background: active 
+              ? `linear-gradient(135deg, ${playerColor}20, ${playerColor}40)`
+              : 'rgba(71, 85, 105, 0.4)',
+            border: `2px solid ${active ? playerColor : 'rgba(148, 163, 184, 0.3)'}`
+          }}
+        >
+          <GamePiece player={piece} size={24} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-white font-bold text-lg truncate">{label}</h3>
+          <div className="flex items-center gap-2 mt-1">
+            <span 
+              className="text-xs font-semibold px-2 py-1 rounded-full"
+              style={{
+                background: `${playerColor}20`,
+                color: playerColor
+              }}
+            >
+              Piece {piece}
+            </span>
+            {active && (
+              <div className="flex items-center gap-1">
+                <div 
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{ backgroundColor: playerColor }}
+                />
+                <span className="text-xs font-medium" style={{ color: playerColor }}>
+                  Your turn
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
+      
+      {/* Active Progress Bar */}
       {active && (
-        <div className="w-full h-1 bg-white/10 rounded">
-          <div className="h-full rounded bg-white/60 animate-pulse" style={{ width: "60%" }} />
+        <div className="w-full h-2 bg-slate-800/60 rounded-full overflow-hidden">
+          <div 
+            className="h-full rounded-full animate-pulse transition-all duration-1000"
+            style={{ 
+              background: `linear-gradient(90deg, ${playerColor}, ${playerColor}80)`,
+              width: "100%"
+            }} 
+          />
         </div>
       )}
     </div>
@@ -307,3 +654,4 @@ function GamePiece({ player, size = 20 }: { player: Player; size?: number }) {
     </svg>
   );
 }
+

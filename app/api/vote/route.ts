@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// In a real app, you would use a database to store votes
-// For demo purposes, we'll use in-memory storage
+// In-memory storage
 const votes: Record<string, number> = {
   option1: 15,
   option2: 23,

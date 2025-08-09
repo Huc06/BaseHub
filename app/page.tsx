@@ -91,126 +91,208 @@ export default function App() {
         )}
       </header>
 
-      {/* 3D Diagonal Carousel */}
-      <div className="relative h-[75vh] flex items-center justify-center perspective-1000">
-        <div className="relative w-full h-full flex items-center justify-center transform-gpu">
-          {games.map((game, index) => {
-            const offset = index - currentSlide;
-            const isActive = offset === 0;
-            
-            return (
-              <div
-                key={game.id}
-                className="absolute transition-all duration-1000 ease-out transform-gpu backface-hidden"
-                style={{
-                  transform: `
-                    translateX(${offset * 450}px)
-                    translateY(${offset * -150}px)
-                    translateZ(${isActive ? 50 : -400}px)
-                    rotateX(${offset * 15}deg)
-                    rotateY(${offset * -30}deg)
-                    rotateZ(${offset * 10}deg)
-                    scale(${isActive ? 1 : 0.7})
-                  `,
-                  zIndex: isActive ? 20 : 5,
-                  opacity: Math.abs(offset) > 1 ? 0 : 1,
-                  filter: `blur(${Math.abs(offset) * 3}px) brightness(${isActive ? 1 : 0.6})`,
-                }}
-              >
-                <div 
-                  className="w-96 h-[500px] rounded-3xl backdrop-blur-md overflow-hidden group cursor-pointer transform-gpu shadow-2xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${game.colors.primary}20, ${game.colors.secondary}20)`,
-                    border: `2px solid ${isActive ? game.colors.primary : 'rgba(255,255,255,0.1)'}`,
-                    boxShadow: isActive ? `0 0 50px ${game.colors.primary}30` : '0 10px 30px rgba(0,0,0,0.3)'
-                  }}
-                  onClick={() => setCurrentSlide(index)}
-                >
-                  {/* Animated Background */}
-                  <div className="absolute inset-0 opacity-30">
-                    <div 
-                      className="absolute inset-0"
-                      style={{
-                        background: `radial-gradient(circle at 20% 20%, ${game.colors.primary}40 0%, transparent 70%)`
-                      }}
-                    />
-                    <div 
-                      className="absolute inset-0"
-                      style={{
-                        background: `radial-gradient(circle at 80% 80%, ${game.colors.secondary}40 0%, transparent 70%)`
-                      }}
-                    />
-                  </div>
-                  
-                  {/* Card Content */}
-                  <div className="relative h-full p-8 flex flex-col justify-between">
-                    {/* Icon Section */}
-                    <div className="flex justify-center">
-                      <div 
-                        className={`w-24 h-24 rounded-full flex items-center justify-center mb-8 transition-all duration-500 ${
-                          isActive ? 'animate-float' : ''
-                        }`}
-                        style={{
-                          background: `linear-gradient(135deg, ${game.colors.primary}30, ${game.colors.secondary}30)`,
-                          border: `2px solid ${game.colors.primary}60`,
-                          boxShadow: `0 0 30px ${game.colors.primary}40`
-                        }}
-                      >
-                        <span className="text-5xl filter drop-shadow-lg">{game.icon}</span>
-                      </div>
-                    </div>
+             {/* Responsive Game Cards */}
+       <div className="relative flex-1 flex items-center justify-center px-4 py-8">
+         {/* Mobile: Stack Layout */}
+         <div className="md:hidden w-full max-w-sm">
+           {games.map((game, index) => (
+             <div 
+               key={game.id}
+               className={`transition-all duration-700 ease-out ${
+                 index === currentSlide ? 'block' : 'hidden'
+               }`}
+             >
+               <div 
+                 className="w-full h-[450px] rounded-3xl backdrop-blur-md overflow-hidden shadow-2xl"
+                 style={{
+                   background: `linear-gradient(135deg, ${game.colors.primary}20, ${game.colors.secondary}20)`,
+                   border: `2px solid ${game.colors.primary}`,
+                   boxShadow: `0 0 50px ${game.colors.primary}30`
+                 }}
+               >
+                 {/* Animated Background */}
+                 <div className="absolute inset-0 opacity-30">
+                   <div 
+                     className="absolute inset-0"
+                     style={{
+                       background: `radial-gradient(circle at 20% 20%, ${game.colors.primary}40 0%, transparent 70%)`
+                     }}
+                   />
+                   <div 
+                     className="absolute inset-0"
+                     style={{
+                       background: `radial-gradient(circle at 80% 80%, ${game.colors.secondary}40 0%, transparent 70%)`
+                     }}
+                   />
+                 </div>
+                 
+                 {/* Card Content */}
+                 <div className="relative h-full p-6 flex flex-col justify-between">
+                   {/* Icon Section */}
+                   <div className="flex justify-center">
+                     <div 
+                       className="w-20 h-20 rounded-full flex items-center justify-center mb-6 animate-float"
+                       style={{
+                         background: `linear-gradient(135deg, ${game.colors.primary}30, ${game.colors.secondary}30)`,
+                         border: `2px solid ${game.colors.primary}60`,
+                         boxShadow: `0 0 30px ${game.colors.primary}40`
+                       }}
+                     >
+                       <span className="text-4xl filter drop-shadow-lg">{game.icon}</span>
+                     </div>
+                   </div>
 
-                    {/* Content */}
-                    <div className="text-center flex-1">
-                      <h3 className="text-4xl font-bold text-white mb-4 drop-shadow-lg">{game.title}</h3>
-                      <p className="text-white/90 text-xl mb-6 font-medium">{game.subtitle}</p>
-                      <p className="text-white/70 text-sm leading-relaxed px-4">{game.description}</p>
-                    </div>
+                   {/* Content */}
+                   <div className="text-center flex-1">
+                     <h3 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">{game.title}</h3>
+                     <p className="text-white/90 text-lg mb-4 font-medium">{game.subtitle}</p>
+                     <p className="text-white/70 text-sm leading-relaxed">{game.description}</p>
+                   </div>
 
-                    {/* Action Button */}
-                    <div className="mt-8">
-                      {isActive ? (
-                        <Link href={game.href}>
-                          <button 
-                            className="w-full py-4 rounded-2xl text-white font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                            style={{
-                              background: `linear-gradient(135deg, ${game.colors.primary}, ${game.colors.secondary})`,
-                              boxShadow: `0 10px 30px ${game.colors.primary}40`
-                            }}
-                          >
-                            <span className="flex items-center justify-center gap-3 text-lg">
-                              Play Now
-                              <span className="transform transition-transform group-hover:translate-x-2">→</span>
-                            </span>
-                          </button>
-                        </Link>
-                      ) : (
-                        <div className="w-full py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white/50 font-semibold text-center">
-                          Play Now
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                   {/* Action Button */}
+                   <div className="mt-6">
+                     <Link href={game.href}>
+                       <button 
+                         className="w-full py-4 rounded-2xl text-white font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                         style={{
+                           background: `linear-gradient(135deg, ${game.colors.primary}, ${game.colors.secondary})`,
+                           boxShadow: `0 10px 30px ${game.colors.primary}40`
+                         }}
+                       >
+                         <span className="flex items-center justify-center gap-3 text-lg">
+                           Play Now
+                           <span className="transform transition-transform">→</span>
+                         </span>
+                       </button>
+                     </Link>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           ))}
+         </div>
 
-        {/* Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-12 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-xl hover:bg-white/20 transition-all duration-300 z-30"
-        >
-          ←
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-12 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-xl hover:bg-white/20 transition-all duration-300 z-30"
-        >
-          →
-        </button>
-      </div>
+         {/* Desktop: 3D Carousel */}
+         <div className="hidden md:block relative w-full h-[500px] perspective-1000">
+           <div className="relative w-full h-full flex items-center justify-center transform-gpu">
+             {games.map((game, index) => {
+               const offset = index - currentSlide;
+               const isActive = offset === 0;
+               
+               return (
+                 <div
+                   key={game.id}
+                   className="absolute transition-all duration-1000 ease-out transform-gpu backface-hidden"
+                   style={{
+                     transform: `
+                       translateX(${offset * 350}px)
+                       translateY(${offset * -100}px)
+                       translateZ(${isActive ? 50 : -300}px)
+                       rotateX(${offset * 12}deg)
+                       rotateY(${offset * -25}deg)
+                       rotateZ(${offset * 8}deg)
+                       scale(${isActive ? 1 : 0.75})
+                     `,
+                     zIndex: isActive ? 20 : 5,
+                     opacity: Math.abs(offset) > 1 ? 0 : 1,
+                     filter: `blur(${Math.abs(offset) * 2}px) brightness(${isActive ? 1 : 0.7})`,
+                   }}
+                 >
+                   <div 
+                     className="w-80 h-[450px] rounded-3xl backdrop-blur-md overflow-hidden group cursor-pointer transform-gpu shadow-2xl"
+                     style={{
+                       background: `linear-gradient(135deg, ${game.colors.primary}20, ${game.colors.secondary}20)`,
+                       border: `2px solid ${isActive ? game.colors.primary : 'rgba(255,255,255,0.1)'}`,
+                       boxShadow: isActive ? `0 0 50px ${game.colors.primary}30` : '0 10px 30px rgba(0,0,0,0.3)'
+                     }}
+                     onClick={() => setCurrentSlide(index)}
+                   >
+                     {/* Animated Background */}
+                     <div className="absolute inset-0 opacity-30">
+                       <div 
+                         className="absolute inset-0"
+                         style={{
+                           background: `radial-gradient(circle at 20% 20%, ${game.colors.primary}40 0%, transparent 70%)`
+                         }}
+                       />
+                       <div 
+                         className="absolute inset-0"
+                         style={{
+                           background: `radial-gradient(circle at 80% 80%, ${game.colors.secondary}40 0%, transparent 70%)`
+                         }}
+                       />
+                     </div>
+                     
+                     {/* Card Content */}
+                     <div className="relative h-full p-6 flex flex-col justify-between">
+                       {/* Icon Section */}
+                       <div className="flex justify-center">
+                         <div 
+                           className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-500 ${
+                             isActive ? 'animate-float' : ''
+                           }`}
+                           style={{
+                             background: `linear-gradient(135deg, ${game.colors.primary}30, ${game.colors.secondary}30)`,
+                             border: `2px solid ${game.colors.primary}60`,
+                             boxShadow: `0 0 30px ${game.colors.primary}40`
+                           }}
+                         >
+                           <span className="text-4xl filter drop-shadow-lg">{game.icon}</span>
+                         </div>
+                       </div>
+
+                       {/* Content */}
+                       <div className="text-center flex-1">
+                         <h3 className="text-3xl font-bold text-white mb-3 drop-shadow-lg">{game.title}</h3>
+                         <p className="text-white/90 text-lg mb-4 font-medium">{game.subtitle}</p>
+                         <p className="text-white/70 text-sm leading-relaxed">{game.description}</p>
+                       </div>
+
+                       {/* Action Button */}
+                       <div className="mt-6">
+                         {isActive ? (
+                           <Link href={game.href}>
+                             <button 
+                               className="w-full py-3 rounded-2xl text-white font-bold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                               style={{
+                                 background: `linear-gradient(135deg, ${game.colors.primary}, ${game.colors.secondary})`,
+                                 boxShadow: `0 10px 30px ${game.colors.primary}40`
+                               }}
+                             >
+                               <span className="flex items-center justify-center gap-2">
+                                 Play Now
+                                 <span className="transform transition-transform group-hover:translate-x-1">→</span>
+                               </span>
+                             </button>
+                           </Link>
+                         ) : (
+                           <div className="w-full py-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white/50 font-semibold text-center">
+                             Play Now
+                           </div>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               );
+             })}
+           </div>
+         </div>
+
+         {/* Navigation Arrows */}
+         <button
+           onClick={prevSlide}
+           className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-lg md:text-xl hover:bg-white/20 transition-all duration-300 z-30"
+         >
+           ←
+         </button>
+         <button
+           onClick={nextSlide}
+           className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white text-lg md:text-xl hover:bg-white/20 transition-all duration-300 z-30"
+         >
+           →
+         </button>
+       </div>
 
       {/* Slide Indicators */}
       <div className="relative z-10 flex justify-center gap-4 mt-8">

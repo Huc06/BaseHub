@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMiniKit, useAddFrame } from "@coinbase/onchainkit/minikit";
 import Link from "next/link";
 import Image from "next/image";
@@ -130,17 +130,5 @@ export default function App() {
 
       </div>
     </div>
-  );
-}
-
-// Navigation Item Component
-function NavItem({ icon, label, active = false }: { icon: string; label: string; active?: boolean }) {
-  return (
-    <button className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
-      active ? 'bg-blue-100 text-blue-600' : 'text-gray-600'
-    }`}>
-      <span className="text-lg mb-1">{icon}</span>
-      <span className="text-xs font-medium">{label}</span>
-    </button>
   );
 }

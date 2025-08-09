@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({ valid: false, source: "none" }, { status: 200 });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ valid: false, error: "Lookup failed" }, { status: 200 });
   }
 }
